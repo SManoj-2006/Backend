@@ -6,6 +6,7 @@ import cors from "cors";
 import {serve} from "inngest/express"
 import { inngest, functions } from "./lib/inngest.js";
 const app = express();
+const isVercel = process.env.VERCEL === "1";
 
 const __dirname = path.resolve();
 
@@ -19,13 +20,17 @@ app.get("/health",(req,res)=>{
     res.status(200).json({msg:"success from backend (health)"})
 })
 
+app.get("/",(req,res)=>{
+    res.status(200).json({msg:"backend is running"})
+})
+
 app.get("/book",(req,res)=>{
     res.status(200).json({msg:"success from backend (book)"})
 })
 
 // make app ready for deployment
 
-if(ENV.NODE_ENV == "production"){
+if(ENV.NODE_ENV == "production" && !isVercel){
     app.use(express.static(path.join(__dirname,"../frontend/dist")))
 
     app.get("/{*any}",(req,res)=>{
@@ -54,6 +59,8 @@ const StartServer = async()=>{
     }
 };
 
-StartServer();
+if (!isVercel) {
+    StartServer();
+}
 
 export default app;
